@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<script src="js/jquery.1.12.4.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/base.css" />
+		<link rel="stylesheet" href="css/style.css">
+
+		<script src="js/index.js"></script>
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/highcharts.js"></script>
+		<script src="js/exporting.js"></script>
+		<script src="js/oldie.js"></script>
+		<script src="js/highcharts-zh_CN.js"></script>
+		<title>促销商品</title>
+
+
+	</head>
+
+	<body style="background: #fff;">
+		<header class="center">
+			<div class="backf posiab">
+				<a href="javascript :;" onClick="javascript :history.back(-1);">图标</a>
+			</div>
+			<span class="dengl">促销活动</span>
+		</header>
+		<div class="mar3"></div>
+
+		<div>
+			<img src="http://m2.ktyqg.com/static/base_cx/upload/zdt.png" class="play" />
+		</div>
+		<div class="jjia" style="margin-top: 0.5rem;">
+			<p data-toggle="modal" data-target="#myModal">加价</p>
+			<p data-toggle="modal" data-target="#myModal">减价</p>
+		</div>
+		<div id="container" style="width: 100%;height:240px"></div>
+		<p class="sp">商品介绍</p>
+		<table border="0" cellspacing="" cellpadding="" class="res">
+			<tr>
+				<th>参与时间</th>
+				<th>参与点</th>
+				<th>到达时间</th>
+				<th>到达点</th>
+				<th>结果</th>
+			</tr>
+			<tr>
+				<td>Data</td>
+				<td>Data</td>
+				<td>Data</td>
+				<td>Data</td>
+				<td>Data</td>
+			</tr>
+		</table>
+		<div>
+			<img src="http://m2.ktyqg.com/static/base_cx/upload/zdtdetail.jpg" class="play" />
+		</div>
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="myModalLabel">游戏开始</h4>
+					</div>
+					<div class="modal-body">
+						游戏倒计时：<span class="djs">5</span>
+					</div>
+
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal -->
+		</div>
+	</body>
+	<script type="text/javascript">
+		var mainh = $("#main").width() / 2 + "px"
+		$("#main").css("height", mainh)
+		var qname = localStorage.getItem("uname")
+	</script>
+	<script type="text/javascript">
+	</script>
+	<script type="text/javascript">
+		var chart = null;
+
+		function formatterDateTime() {
+			var date = new Date()
+			var month = date.getMonth() + 1
+			var datetime = date.getFullYear() +
+				"" // "年"
+				+
+				(month >= 10 ? month : "0" + month) +
+				"" // "月"
+				+
+				(date.getDate() < 10 ? "0" + date.getDate() : date
+					.getDate()) +
+				"" +
+				(date.getHours() < 10 ? "0" + date.getHours() : date
+					.getHours()) +
+				"" +
+				(date.getMinutes() < 10 ? "0" + date.getMinutes() : date
+					.getMinutes()) +
+				"" +
+				(date.getSeconds() < 10 ? "0" + date.getSeconds() : date
+					.getSeconds());
+			return datetime;
+		}
+		data = [
+			[1525943539000, 71.61],
+			[1525943594000, 71.62],
+			[1525943594100, 71.63],
+			[1525943594200, 71.64],
+			[1525943594300, 71.62],
+			[1525943594400, 71.67],
+			[1525943594500, 71.69],
+			[1525943594600, 71.61],
+			[1525943594700, 71.62]
+		]
+
+		function activeLastPointToolip(chart) {
+			var points = chart.series[0].points;
+			chart.tooltip.refresh(points[points.length - 1]);
+		}
+		chart = Highcharts.chart('container', {
+			chart: {
+				zoomType: 'x',
+				events: {
+					load: function() {
+						var series = this.series[0],
+							chart = this;
+						activeLastPointToolip(chart);
+						setInterval(function() {
+							$.ajax({
+								type: 'post',
+								url: 'http://route.showapi.com/1108-1',
+								dataType: 'json',
+								data: {
+									"showapi_timestamp": formatterDateTime(),
+									"showapi_appid": '64103', //这里需要改成自己的appid
+									"showapi_sign": '22f24f581924488fbbc386bbc9474fd0', //这里需要改成自己的应用的密钥secret
+									"code": "wti"
+								},
+								success: function(result) {
+									var price = result.showapi_res_body.nowPrice
+									var starttime = result.showapi_res_body.time
+									var starttimeHaoMiao = (new Date()).getTime(); //得到毫秒数
+									$(".jjia p:nth-of-type(1)").click(function() {
+										$(".modal-body").html("游戏倒计时：<span class='djs'>2</span>")
+										var daojishi = 2
+										var firstprice = price
+										console.log(firstprice)
+										var djs = function() {
+											daojishi--
+											$(".djs").html(daojishi)
+											if(daojishi == "0") {
+												clearInterval(clear)
+											}
+										}
+										var clear = setInterval(djs, 1000)
+										//										$.ajax({
+										//											//           	加价
+										//											type: "post",
+										//											url: "http://192.168.18.117:9001/Shop/MobilePromotionProduct?status=addPrice",
+										//											dataType: "json",
+										//											contentType: "application/x-www-form-urlencoded;                                                           charset=utf-8",
+										//											data: {
+										//												"uname": qname,
+										//												"joinPoint": price,
+										//												"opertion": "1"
+										//											},
+										//											success: function(res) {
+										//												console.log(res)
+										//												//							window.location.href = "zhifu.html"
+										//											}
+										//											
+										//										});
+										var chan = function() {
+											var rod = Math.random()
+											price = firstprice - 0.7 + rod
+											console.log(rod)
+											console.log(price)
+											data.push([starttimeHaoMiao, price])
+											var x = (new Date()).getTime(), // 当前时间
+												y = price; // 随机值
+											console.log(x, y)
+											series.addPoint([x, y], true, true);
+											activeLastPointToolip(chart);
+											if(firstprice > price) {
+												$(".modal-body").html("加价失败")
+												
+												
+								
+											} else {
+												$(".modal-body").html("加价成功")
+											}
+										}
+										setTimeout(chan, 2000)
+									})
+
+									data.push([starttimeHaoMiao, price])
+									var x = (new Date()).getTime(), // 当前时间
+										y = price; // 随机值
+									console.log(x, y)
+									series.addPoint([x, y], true, true);
+									activeLastPointToolip(chart);
+								}
+							});
+
+						}, 10000);
+					}
+				}
+			},
+			title: {
+				text: ''
+			},
+
+			xAxis: {
+				type: 'datetime',
+				dateTimeLabelFormats: {
+					millisecond: '%H:%M:%S.%L',
+					second: '%H:%M:%S',
+					minute: '%H:%M',
+					hour: '%H:%M',
+					day: '%m-%d',
+					week: '%m-%d',
+					month: '%Y-%m',
+					year: '%Y'
+				}
+			},
+			tooltip: {
+				dateTimeLabelFormats: {
+					millisecond: '%H:%M:%S.%L',
+					second: '%H:%M:%S',
+					minute: '%H:%M',
+					hour: '%H:%M',
+					day: '%Y-%m-%d',
+					week: '%m-%d',
+					month: '%Y-%m',
+					year: '%Y'
+				}
+			},
+			yAxis: {
+				title: {
+					text: ''
+				}
+			},
+			legend: {
+				enabled: false
+			},
+			plotOptions: {
+				area: {
+					fillColor: {
+						linearGradient: {
+							x1: 0,
+							y1: 0,
+							x2: 0,
+							y2: 1
+						},
+						stops: [
+							[0, Highcharts.getOptions().colors[0]],
+							[1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+						]
+					},
+					marker: {
+						radius: 2
+					},
+					lineWidth: 1,
+					states: {
+						hover: {
+							lineWidth: 1
+						}
+					},
+					threshold: null
+				}
+			},
+			//			series: [{
+			//				type: 'area',
+			//				name: '',
+			//				data: datay
+			//			}]
+			series: [{
+				name: '随机数据',
+				data: (function() {
+					// 生成随机值
+					//                  var data = [],
+					//					time = (new Date()).getTime(),
+
+					$.ajax({
+						type: 'post',
+						url: 'http://route.showapi.com/1108-1',
+						dataType: 'json',
+						data: {
+							"showapi_timestamp": formatterDateTime(),
+							"showapi_appid": '64103', //这里需要改成自己的appid
+							"showapi_sign": '22f24f581924488fbbc386bbc9474fd0', //这里需要改成自己的应用的密钥secret
+							"code": "wti"
+						},
+						success: function(result) {
+							time = (new Date()).getTime()
+							console.log(result)
+							for(i = -19; i <= 0; i += 1) {
+								var price = result.showapi_res_body.nowPrice
+								data.push({
+									x: time + i * 3000,
+									y: price
+								});
+							}
+							//							var price = result.showapi_res_body.nowPrice
+							//							var starttime = result.showapi_res_body.time
+							//							var starttimeHaoMiao = (new Date(starttime)).getTime(); //得到毫秒数
+							//							data.push([starttimeHaoMiao, price])
+							//                          data.push({
+							//										x: (new Date()).getTime(),
+							//										y: price
+							//								});
+							//							console.log(data)
+						}
+					});
+					return data;
+
+				}())
+			}]
+		});
+
+		//	setInterval(aaa,5000)
+
+		//		setInterval(aaa,500)
+	</script>
+	<script type="text/javascript">
+		$(function() {
+			
+			$(".jjia p:nth-of-type(2)").click(function() {
+
+				$(".modal-body").html("游戏倒计时：<span class='djs'>5</span>")
+				var daojishi = 2
+				//		var firstprice = $("#last_price").html()
+				//		var change_price = parseInt($("#last_price").html()) + 70
+				$.ajax({
+
+					//           	减价
+					type: "post",
+					url: "http://192.168.18.117:9001/Shop/MobilePromotionProduct?status=addPrice",
+					dataType: "json",
+					contentType: "application/x-www-form-urlencoded; charset=utf-8",
+					data: {
+						"uname": qname,
+						"joinPoint": "10000",
+						"opertion": "1"
+					},
+					success: function(res) {
+						console.log(res)
+						//							window.location.href = "zhifu.html"
+					}
+				});
+				var djs = function() {
+					daojishi--
+					$(".djs").html(daojishi)
+					if(daojishi == "0") {
+						clearInterval(clear)
+					}
+				}
+				var clear = setInterval(djs, 1000)
+				var jiajia = function neitext() {
+					
+					$.ajax({
+						//           	减价结束
+						type: "post",
+						url: 'http://192.168.18.117:9001/Shop/MobilePromotionProduct?status=plusPrice&&uname=' + qname + '&&overPoint=15000',
+						dataType: "json",
+						contentType: "application/x-www-form-urlencoded; charset=utf-8",
+						data: {
+							//					"uname": qname,
+							//					"overPoint ": qwe,
+						},
+						success: function(res) {
+							console.log(res)
+							//							window.location.href = "zhifu.html"
+
+						}
+					});
+
+					
+				}
+				setTimeout(jiajia, 2000)
+
+			})
+
+		})
+	</script>
+
+</html>
